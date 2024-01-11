@@ -331,7 +331,7 @@ class Employeer
     	}
 	}
 
-	public function projectosConcluidos()
+	public function finishedProjects()
 	{
 		try{
 
@@ -361,7 +361,7 @@ class Employeer
     	}
 	}
 
-	public function nextProjectsToDeliver($from, $to)
+	public static function nextProjectsToDeliver($from, $to)
 	{
 		try{
 
@@ -383,6 +383,10 @@ class Employeer
             	throw new InvalidArgumentException("Formatted 'YYYY-MM-DD' expected for the second date");
             }
 
+            $fromDate 	= $validDateFrom->format('Y-m-d');
+
+            $toDate 	= $validDateTo->format('Y-m-d');
+
             $stm = Connection::connect()->prepare(
             	"SELECT e.name as employee, p.id_employee, p.id as id_project,
 				p.description, p.value, p.delivery_date, p.status
@@ -392,9 +396,11 @@ class Employeer
 				delivery_date BETWEEN :fromDate AND  :toDate   
 				ORDER BY id_employee,  delivery_date;");
 
-            $stm->bindParam(':fromDate', $validDateFrom->format('Y-m-d'), PDO::PARAM_STR);
+            $stm->bindParam(':fromDate', $fromDate, PDO::PARAM_STR);
 
-            $stm->bindParam(':toDate', $validDateTo->format('Y-m-d'), PDO::PARAM_STR);
+            $stm->bindParam(':toDate', $toDate, PDO::PARAM_STR);
+
+            $stm->execute();
 
             $result = $stm->fetchAll();
 

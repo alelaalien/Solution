@@ -15,3 +15,4 @@ CREATE TABLE projects (
     status VARCHAR (20), --entregar, concluido
     delivery_date DATE
 );
+ALTER TABLE projects ADD FOREIGN KEY (id_employee) REFERENCES employees(id) ON DELETE RESTRICT ON UPDATE RESTRICT; 
