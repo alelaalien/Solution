@@ -14,11 +14,46 @@ class Employeer
 
 /*----------  store  ----------*/
 
-	public static function storeEmployee($employee)
-	{
-		return EmployeerController::storeEmployee($employee);
-	}
+	public static function storeEmployee($data)
+	{	
 
+		try {
+			
+			$salary = number_format($data->salary, 2, '.', '');
+
+			$date = date('Y-m-d', strtotime($data->admissionDate));
+				
+			$stm = Connection::connect()->prepare(
+
+				"INSERT INTO employees (name, age, job, salary, admission_date) 
+				VALUES (:name, :age, :job, :salary, :admission_date)"
+
+			);
+			
+			$stm->bindParam(":name", $data->name, PDO::PARAM_STR);
+			$stm->bindParam(":age", $data->age, PDO::PARAM_INT);
+			$stm->bindParam(":job", $data->job, PDO::PARAM_STR);
+			$stm->bindParam(":salary", $salary, PDO::PARAM_STR);
+			$stm->bindParam(":admission_date", $date, PDO::PARAM_STR);
+
+			if($stm->execute())
+			{
+
+				return true;
+			}else{
+
+				return false;
+			} 
+
+			$stm = null;
+
+		} catch (PDOException $e) {
+
+			echo "Error: " . $e->getMessage();
+
+			return false;
+		}
+	}
 /*----------  getters  ----------*/
 
 	public function getName()
@@ -212,73 +247,98 @@ class Employeer
 
 	public function setStatus($status)
 	{
-		$this->status=$status;
+		try {
+
+            $validNumber = filter_var($status, FILTER_VALIDATE_INT);
+
+            if ($validNumber === false || $validNumber === null ) {
+
+                throw new InvalidArgumentException("Not valid status number. The allowed values ​​are: 0 (pending)/ 1 (finished)/ 2 (delivered)");
+            }
+
+       		$this->status=$validNumber;
+
+        } catch (InvalidArgumentException $e) {
+          
+            echo "Error: " . $e->getMessage();
+        }
 	}
 
 	public function setDescription($description)
 	{
 		$this->description=$description;
 	}
+ /*----------   other methods   ----------*/
 
-/*----------   other methods   ----------*/
-public static function storeEmployee($data)
-{	
+	public function averageEmployeesAge()
+	{
+		try {
 
-	try {
-		
-		$salary = number_format($data["salary"], 2, '.', '');
+			$st = Connection::connect()->prepare("SELECT ROUND(AVG(age)) as average_employee_age FROM employees");
 
-		$date = date('Y-m-d', strtotime($data["admissionDate"]));
-			
-		$stm = Connection::connect()->prepare(
+			$st->execute();
 
-			"INSERT INTO employees (name, age, job, salary, admission_date) 
-			VALUES (:name, :age, :job, :salary, :admission_date)"
+			$result = $st->fetch();
 
-		);
-		
-		$stm->bindParam(":name", $data["name"], PDO::PARAM_STR);
-		$stm->bindParam(":age", $data["age"], PDO::PARAM_INT);
-		$stm->bindParam(":job", $data["job"], PDO::PARAM_STR);
-		$stm->bindParam(":salary", $salary, PDO::PARAM_STR);
-		$stm->bindParam(":admission_date", $date, PDO::PARAM_STR);
+			if ($result !== false) {
 
-		if($stm->execute())
-		{
+				return $result['average_employee_age'];
 
-			return true;
-		}else{
+			} else { 
+
+				return null;
+			}
+
+		} catch (PDOException $e) {
+
+			echo "Error: " . $e->getMessage();
 
 			return false;
-		} 
-
-		$stm = null;
-
-	} catch (PDOException $e) {
-
-		echo "Error: " . $e->getMessage();
-
-		return false;
+		}
 	}
-}
 
-public function averageEmployeesAge()
-{
-	$st = Connection::connect()->prepare("SELECT ROUND(AVG(age)) as average_employee_age FROM employees");
+	public function employeeFunction()
+	{
+		try {
+			$st = Connection::connect()->prepare("SELECT name as employee, job as function FROM employees");
 
-	$st->execute();
+			$st->execute();
 
-	$result = $st->fetch();
+			$result = $st->fetchAll();
 
-	if ($result !== false) {
+			$st = null; 
 
-		return $result['average_employee_age'];
+			return $result; 
 
-	} else { 
+		} catch (PDOException $e) {
 
-		return null;
+			echo "Error: " . $e->getMessage();
+
+			return false;
+		}
 	}
-}
- 	
+
+	public function salaryIncreaseSimulator($percent)
+	{	
+		$value = $percent/100;
+		try {
+			$st = Connection::connect()->prepare("SELECT name as employee, salary as current_salary, (salary * 1.1) increased_salary from employees");
+
+			$st->execute();
+
+			$result = $st->fetchAll();
+
+			$st = null; 
+
+			return $result; 
+
+		} catch (PDOException $e) {
+
+			echo "Error: " . $e->getMessage();
+
+			return false;
+		}
+	}
+
 
 }
