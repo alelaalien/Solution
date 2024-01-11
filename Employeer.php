@@ -36,23 +36,19 @@ class Employeer
 			$stm->bindParam(":salary", $salary, PDO::PARAM_STR);
 			$stm->bindParam(":admission_date", $date, PDO::PARAM_STR);
 
-			if($stm->execute())
-			{
+			$result = $stm->execute();
 
-				return true;
-			}else{
-
-				return false;
-			} 
-
-			$stm = null;
+			return $result;
+			 
 
 		} catch (PDOException $e) {
 
-			echo "Error: " . $e->getMessage();
+			echo "Error: " . $e->getMessage(); 
 
-			return false;
-		}
+		}finally {
+         
+        	if ($stm !== null) {  $stm = null;  }
+    	}
 	}
 /*----------  getters  ----------*/
 
@@ -246,22 +242,9 @@ class Employeer
 	}
 
 	public function setStatus($status)
-	{
-		try {
-
-            $validNumber = filter_var($status, FILTER_VALIDATE_INT);
-
-            if ($validNumber === false || $validNumber === null ) {
-
-                throw new InvalidArgumentException("Not valid status number. The allowed values ​​are: 0 (pending)/ 1 (finished)/ 2 (delivered)");
-            }
-
-       		$this->status=$validNumber;
-
-        } catch (InvalidArgumentException $e) {
-          
-            echo "Error: " . $e->getMessage();
-        }
+	{ 
+       	$this->status=$status;
+ 
 	}
 
 	public function setDescription($description)
@@ -291,10 +274,11 @@ class Employeer
 
 		} catch (PDOException $e) {
 
-			echo "Error: " . $e->getMessage();
-
-			return false;
-		}
+			echo "Error: " . $e->getMessage(); 
+		}finally {
+         
+        	if ($st !== null) {  $st = null;  }
+    	}
 	}
 
 	public function employeeFunction()
@@ -315,15 +299,20 @@ class Employeer
 			echo "Error: " . $e->getMessage();
 
 			return false;
-		}
+		
+		}finally {
+         
+        	if ($st !== null) {  $st = null;  }
+    	}
 	}
 
-	public function salaryIncreaseSimulator($percent)
+	public static function salaryIncreaseSimulator($percent)
 	{	
-		$value = $percent/100;
-		try {
-			$st = Connection::connect()->prepare("SELECT name as employee, salary as current_salary, (salary * 1.1) increased_salary from employees");
+		$value = $percent/100 + 1; 
 
+		try {
+			$st = Connection::connect()->prepare("SELECT name as employee, salary as current_salary, (salary * :value) increased_salary from employees");
+			$st->bindParam(":value", $value, PDO::PARAM_STR);
 			$st->execute();
 
 			$result = $st->fetchAll();
@@ -335,10 +324,92 @@ class Employeer
 		} catch (PDOException $e) {
 
 			echo "Error: " . $e->getMessage();
-
-			return false;
-		}
+ 
+		}finally {
+         
+        	if ($st !== null) {  $st = null;  }
+    	}
 	}
 
+	public function projectosConcluidos()
+	{
+		try{
+
+			$statement = Connection::connect()->prepare("SELECT * FROM projects
+						 where status = 'concluido' and YEAR(delivery_date) = YEAR(CURRENT_DATE) 
+						 ORDER BY delivery_date DESC");
+
+			if($statement->execute()){
+
+				$result = $statement->fetchAll();
+
+				$statement = null;
+
+				return $result;
+
+			}else{
+
+				return 'error';
+			} 
+		}catch(Exception $e){
+			
+			echo "Error: " . $e->getMessage();
+
+		}finally {
+         
+        	if ($statement !== null) {  $statement = null;  }
+    	}
+	}
+
+	public function nextProjectsToDeliver($from, $to)
+	{
+		try{
+
+			$validDateFrom = new DateTime($from);
+ 
+            $errorFrom = DateTime::getLastErrors();
+
+            $validDateTo = new DateTime($to);
+
+            $errorTo = DateTime::getLastErrors();
+
+            if($errorFrom['error_count'] > 0 || $errorFrom['warning_count'] > 0){
+
+            	throw new InvalidArgumentException("Formatted 'YYYY-MM-DD' expected for the first date");
+            }
+
+            if($errorTo['error_count'] > 0 || $errorTo['warning_count'] > 0){
+
+            	throw new InvalidArgumentException("Formatted 'YYYY-MM-DD' expected for the second date");
+            }
+
+            $stm = Connection::connect()->prepare(
+            	"SELECT e.name as employee, p.id_employee, p.id as id_project,
+				p.description, p.value, p.delivery_date, p.status
+				FROM projects p 
+				LEFT JOIN employees e on e.id = p.id_employee 
+				where status = 'entregar' and
+				delivery_date BETWEEN :fromDate AND  :toDate   
+				ORDER BY id_employee,  delivery_date;");
+
+            $stm->bindParam(':fromDate', $validDateFrom->format('Y-m-d'), PDO::PARAM_STR);
+
+            $stm->bindParam(':toDate', $validDateTo->format('Y-m-d'), PDO::PARAM_STR);
+
+            $result = $stm->fetchAll();
+
+            $stm = null;
+
+            return $result;
+
+		}catch(Exception $e){
+
+			echo "Error: " . $e->getMessage();
+  
+		}finally {
+         
+        	if ($stm !== null) {  $stm = null;  }
+    	}
+	}
 
 }

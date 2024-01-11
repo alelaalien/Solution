@@ -43,7 +43,7 @@ require "Employeer.php";
    
                 if($newEmployee)
 
-                    echo '<script>added();</script>';
+                    echo '<script>alert("Employee added");</script>';
             }else{
 
                     echo '<script>alert("The request was canceled due to a security issue. Please try again later.");</script>';
@@ -54,7 +54,7 @@ require "Employeer.php";
     <div class="container">
         <div class="row">
             <div class="col-12">
-                <h1 class="text-center text-uppercase text-muted">Add employee</h1>
+                <h1 class="text-center text-capitalize text-muted">Add employee</h1>
                 <form action="" method="POST" name="addEmployee" style="width: 80%; margin:auto;">
                     <input type="hidden" name="csrf-token" value="<?=$_SESSION['csrfToken']?>">
                     <div class="form-group">
@@ -63,7 +63,7 @@ require "Employeer.php";
                     </div>
                     <div class="form-group">
                         <label for="age">Age</label>
-                        <input type="text" class="form-control" name="age" id="age" aria-describedby="ageHelp" placeholder="Enter age..." required>
+                        <input type="text" class="form-control" name="age" id="age" aria-describedby="ageHelp" placeholder="Enter age..." onkeypress="return valideKey(event, false, this);" required>
                     </div>
                     <div class="form-group">
                         <label for="job">Job</label>
@@ -71,7 +71,7 @@ require "Employeer.php";
                     </div>
                     <div class="form-group">
                         <label for="salary">Salary</label>
-                        <input type="text" class="form-control" name="salary" id="salary" aria-describedby="salaryHelp" placeholder="Enter salary..." required>
+                        <input type="text" class="form-control" name="salary" id="salary" aria-describedby="salaryHelp" placeholder="Enter salary..."  onkeypress="return valideKey(event, true, this);"  required>
                     </div>
                     <div class="form-group">
                         <label for="admissionDate">Admission date</label>
@@ -82,7 +82,7 @@ require "Employeer.php";
                         <button type="submit" class="btn btn-success" name="addEmployee">Accept</button>
                     </div> 
                 </form>
-            </div>
+            </div> 
         </div>
     </div> 
     <!-- scripts -->
@@ -90,10 +90,36 @@ require "Employeer.php";
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>
   
     <script>
-        const added = () =>{
 
-            console.log('added');
-        }
+        //client side validations
+     
+            const valideKey = (evt, decimal, input) =>{ 
+
+                var code = (evt.which) ? evt.which : evt.keyCode; 
+         
+                if(code==8) {  return true; }
+
+                else if(code >= 48 && code <= 57) {   return true;}
+
+                else if(decimal && (code == 46 || code == 44) && $(input).val().length > 0){ 
+                    
+
+                    if ($(input).val().includes('.') || $(input).val().includes(',')) {  
+
+                        return false;
+
+                    }else{
+
+                        return true;
+                    } 
+                }
+
+                else{ 
+
+                    return false; 
+                }
+            } 
+
     </script>
 </body>
 </html>

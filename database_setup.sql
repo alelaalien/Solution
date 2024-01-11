@@ -12,6 +12,6 @@ CREATE TABLE projects (
     id_employee INT,
     description VARCHAR(100),
     value DECIMAL(10, 2),
-    status INT, --0: pendente, 1: pronto, 2: entregado
+    status VARCHAR (20), --entregar, concluido
     delivery_date DATE
 );
