@@ -2,6 +2,28 @@
 
 require "Employeer.php";
 
+/*======================================================================================================
+=                                               comments                                               =
+======================================================================================================*/
+//  Form: Todos os campos são obrigatórios.
+//      Em nome e trabalho, limitei os caracteres deste exemplo a 50.
+//      Botão enviar para processar o formulário e redefinir para limpá-lo.
+//      Os valores dos inputs que o formulário irá processar devem passar pelo primeiro filtro de validação 
+//      para poder chegar ao backend.
+//      O segundo filtro da classe fará os escapes correspondentes para proteger o banco de dados.
+//      
+//       
+//      
+//  Outros métodos: Na seção "outros métodos" será exibida a implementação dos métodos da classe Employeer clicando no título.
+//      Os testes podem ser realizados manipulando o código parametrizado:
+//          exemplo: $percent10 = 10  $porcent50 = 50; => $percent10 = 100; $ percent50 = 70;
+//          exemplo 2: $from = '05-01-2024' $to = '07-05-2024' => $from = '08-09-2024' $to = '01-11-2024'
+//          
+//      Caso não haja registros correspondentes, será exibida a legenda: “Ainda não há registros”.
+//      Os registros podem ser ocultados clicando novamente no título "outros métodos" . 
+/*========================================  End of comments  =========================================*/
+
+
     session_start(); 
     //prevenção de ataques x-csrf*
     if (!isset($_SESSION['csrfToken'])) {
