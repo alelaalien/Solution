@@ -3,7 +3,7 @@
 require "Employeer.php";
 
     session_start(); 
-    //csrf token*
+    //prevenção de ataques x-csrf*
     if (!isset($_SESSION['csrfToken'])) {
             //token 32 bytes
             $_SESSION['csrfToken'] = bin2hex(random_bytes(32));
@@ -21,7 +21,7 @@ require "Employeer.php";
 </head>
 <body> 
     <?php  
-
+//salvar registro no banco de dados
         if (isset($_POST['name'])) { 
  
             if(isset($_POST['csrf-token']) && $_POST['csrf-token'] === $_SESSION['csrfToken'])
@@ -42,10 +42,10 @@ require "Employeer.php";
                 $store = Employeer::storeEmployee($newEmployee);
    
                 if($newEmployee)
-
+//success
                     echo '<script>alert("Employee added");</script>';
             }else{
-
+//erro de segurança
                     echo '<script>alert("The request was canceled due to a security issue. Please try again later.");</script>';
             }
             
@@ -58,18 +58,22 @@ require "Employeer.php";
                 <form action="" method="POST" name="addEmployee" style="width: 80%; margin:auto;"> 
                     <div class="form-group">
                         <label for="name">Name</label>
-                        <input type="text" class="form-control" name="name" id="name" aria-describedby="nameHelp" placeholder="Enter name..." required>
+                        <!-- apenas letras (50)-->
+                        <input type="text" onkeypress="return valideString(event);" maxlength="50" class="form-control" name="name" id="name" aria-describedby="nameHelp" placeholder="Enter name..." required>
                     </div>
                     <div class="form-group">
                         <label for="age">Age</label>
+                        <!-- apenas números -->
                         <input type="text" class="form-control" maxlength="2" name="age" id="age" aria-describedby="ageHelp" placeholder="Enter age..." onkeypress="return valideKey(event, false, this);" required>
                     </div>
                     <div class="form-group">
                         <label for="job">Job</label>
-                        <input type="text" class="form-control" name="job" id="job" aria-describedby="jobHelp" placeholder="Enter job..." required>
+                         <!-- apenas letras -->
+                        <input type="text" onkeypress="return valideString(event);" maxlength="50" class="form-control" name="job" id="job" aria-describedby="jobHelp" placeholder="Enter job..." required>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group"> 
                         <label for="salary">Salary</label>
+                        <!-- apenas números ou decimais -->
                         <input type="text" class="form-control"  maxlength="11"  name="salary" id="salary" aria-describedby="salaryHelp" placeholder="Enter salary..."  onkeypress="return valideKey(event, true, this);"  required>
                         <span class="text-danger small d-none" >*Up to 10 digits</span>
                     </div>
@@ -111,9 +115,7 @@ require "Employeer.php";
                     $finishedProjects = $employeer->finishedProjects();
                     // F
                     $from = '05-01-2024'; $to = '07-05-2024';
-                    $nextProjects = Employeer::nextProjectsToDeliver($from, $to);
-                     
-
+                    $nextProjects = Employeer::nextProjectsToDeliver($from, $to); 
 
                     ?> 
                     <div class="container-fluid" style="background: #f5deb321;">
@@ -138,16 +140,16 @@ require "Employeer.php";
                                         </thead>
                                         <tbody> 
                                             <?php 
-
+                                    //carregar dados na tabela
                                                 foreach ($simulator10 as $key => $value) { ?> 
                                                 <tr>
-                                                    <td class="text-center"><?=$value['employee']?></td>
+                                                    <td class="text-center" style="overflow: hidden;" ><?=$value['employee']?></td>
                                                     <td class="text-center"><?=$value['current_salary']?></td>
-                                                    <td class="text-center"><?=$value['increased_salary']?></td>
+                                                    <td class="text-center" ><?=$value['increased_salary']?></td>
                                                 </tr> 
 
                                             <?php }
-
+                                    //resposta a nenhum dado para mostrar
                                             if(count($simulator10) == 0){ ?>
 
                                             <tr>
@@ -174,7 +176,7 @@ require "Employeer.php";
 
                                                 foreach ($simulator50 as $key => $value) { ?> 
                                                 <tr>
-                                                    <td class="text-center"><?=$value['employee']?></td>
+                                                    <td class="text-center" style="overflow: hidden;"><?=$value['employee']?></td>
                                                     <td class="text-center"><?=$value['current_salary']?></td>
                                                     <td class="text-center"><?=$value['increased_salary']?></td>
                                                 </tr> 
@@ -307,9 +309,7 @@ require "Employeer.php";
                      
                   </div>
                 </div>
-            </div>
-              
-                        
+            </div> 
         </div>
     </div> 
     <!-- scripts -->
@@ -318,11 +318,27 @@ require "Employeer.php";
   
     <script>
 
-         function clearForm() {
+            function clearForm() {
 
                 document.forms["addEmployee"].reset();
+                $('.text-danger').addClass('d-none');
             }
-  
+//controlar os caracteres permitidos em uma string
+            const valideString = (e) => {
+
+                input = e.target; 
+
+                const key = e.key;
+
+                const isLetter = /^[a-zA-Z\s]$/.test(key);
+
+                    if (!isLetter) {
+                        
+                        e.preventDefault();  
+                    }
+
+            }
+ //apenas números para idade, ou números, '.' ou ',' para salário 
             const valideKey = (evt, decimal, input) =>{ 
   
                 var code = (evt.which) ? evt.which : evt.keyCode;  
@@ -337,7 +353,7 @@ require "Employeer.php";
 
                     }else if($(input).attr('name') == 'salary'){
 
-                        if($(input).val().length < 11){ 
+                        if($(input).val().length < 10){ 
                            
 
                             $('.text-danger').addClass('d-none');
